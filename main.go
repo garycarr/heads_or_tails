@@ -1,69 +1,96 @@
 package main
 
 import (
-	"log"
-	"math/rand"
-	"sort"
+	"flag"
+	"os"
 	"strconv"
-	"time"
+	"sync"
 )
 
-const minInRow = 20
+// CounterTotal to count the overallTotal
+type CounterTotal struct {
+	billions      int
+	count         int
+	inARowCounter map[int]int
+	mux           sync.Mutex
+}
+
+const billion = 1000000000
+const defaultConcurrentThreads = 1
+const defaultMaxTosses = billion
+const defaultMinInRow = 15
+const defaultNumSides = 2
+const defaultPrintEvery = 1000000
+const defaultVerbose = true
+
+type Config struct {
+	concurrentThreads int
+	maxTosses         int
+	minInRow          int
+	numSides          int
+	printEvery        int
+	verbose           bool
+}
+
+var (
+	concurrentThreads = flag.Int("concurrent-threads", defaultConcurrentThreads, "Num of concurrent threads")
+	maxTosses         = flag.Int("max-tosses", defaultMaxTosses, "Maximum number of tosses. Input -1 for the highest possible")
+	minInRow          = flag.Int("min-count", defaultMinInRow, "Min in a row to start counting")
+	numSides          = flag.Int("num-sides", defaultNumSides, "How many sides. Example - 2 for a coin or 6 for a dice")
+	printEvery        = flag.Int("print-every", defaultPrintEvery, "How many tosses to print at")
+	verbose           = flag.Bool("verbose", defaultVerbose, "Prints out at every print-every")
+	stop              = false
+	testRun           = false
+)
+var cT CounterTotal
+
+func init() {
+	cT = CounterTotal{inARowCounter: make(map[int]int)}
+}
+
+func mustGetEnv(env string) int {
+	envInt, err := strconv.Atoi(os.Getenv(env))
+	if err != nil {
+		panic(err)
+	}
+	return envInt
+}
+
+func getConfig() Config {
+	// Should be able to make this neater
+	var conf Config
+	if os.Getenv("ENV_SET") != "" {
+		// Find a package to do this
+		// Need to fail if not found
+		var verbose bool
+		if os.Getenv("VERBOSE") == "true" {
+			verbose = true
+		} else {
+			verbose = false
+		}
+		conf = Config{
+			concurrentThreads: mustGetEnv("CONCURRENT_THREAD"),
+			maxTosses:         mustGetEnv("MAX_TOSSES"),
+			minInRow:          mustGetEnv("MIN_IN_ROW"),
+			numSides:          mustGetEnv("NUM_SIDES"),
+			printEvery:        mustGetEnv("PRINT_EVERY"),
+			verbose:           verbose,
+		}
+	} else {
+		flag.Parse()
+		conf = Config{
+			concurrentThreads: *concurrentThreads,
+			maxTosses:         *maxTosses,
+			minInRow:          *minInRow,
+			numSides:          *numSides,
+			printEvery:        *printEvery,
+			verbose:           *verbose,
+		}
+	}
+	return conf
+}
 
 func main() {
-	// When to print to the console
-	printAt := 100000000
-
-	// The number of times printed to the console
-	timesReachedPrintAt := 0
-
-	counter := 0
-
-	headsInRow := 0
-	tailsInRow := 0
-	heads := 0
-	// tails := 1
-
-	runningCounter := make(map[int]int)
-
-	rand.Seed(time.Now().UnixNano())
-
-	for {
-		counter++
-		newToss := rand.Intn(2)
-		if newToss == heads {
-			runningCounter = toinCoss(&headsInRow, &tailsInRow, runningCounter)
-		} else {
-			runningCounter = toinCoss(&tailsInRow, &headsInRow, runningCounter)
-		}
-
-		if counter%printAt == 0 {
-			rand.Seed(time.Now().UnixNano())
-			counter = 0
-			timesReachedPrintAt++
-			printStatus(&timesReachedPrintAt, runningCounter)
-
-		}
-	}
-}
-
-func toinCoss (winningFaceInRow *int, losingFaceInRow *int, runningCounter map[int]int) map[int]int {
-	if *losingFaceInRow >= minInRow {
-		runningCounter[*losingFaceInRow]++
-	}
-	*losingFaceInRow = 0
-	*winningFaceInRow++
-	return runningCounter
-}
-
-func printStatus (timesReachedPrintAt *int, runningCounter map[int]int) {
-	log.Printf("\n%s hundred million tosses - ", strconv.Itoa(*timesReachedPrintAt))
-	var keys []int
-	for k := range runningCounter {
-		keys = append(keys, k)
-	}
-	sort.Ints(keys)
-	for _, key := range keys {
-		log.Printf("%s in a row occured %s times", strconv.Itoa(key), strconv.Itoa(runningCounter[key]))
-	}
+	app := newApp(getConfig())
+	app.start()
 }
