@@ -1,0 +1,10 @@
+heads_or_tails:
+  build: .
+  environment:
+      - ENV_SET=true
+      - CONCURRENT_THREAD=20
+      - MAX_TOSSES=-1
+      - MIN_IN_ROW=100000
+      - NUM_SIDES=5
+      - PRINT_EVERY=1000000
+      - VERBOSE=true

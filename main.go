@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"log"
 	"os"
 	"strconv"
 	"sync"
@@ -51,6 +52,7 @@ func init() {
 func mustGetEnv(env string) int {
 	envInt, err := strconv.Atoi(os.Getenv(env))
 	if err != nil {
+		log.Printf("Unable to get envVar for %s. It must be set", env)
 		panic(err)
 	}
 	return envInt
@@ -65,8 +67,6 @@ func getConfig() Config {
 		var verbose bool
 		if os.Getenv("VERBOSE") == "true" {
 			verbose = true
-		} else {
-			verbose = false
 		}
 		conf = Config{
 			concurrentThreads: mustGetEnv("CONCURRENT_THREAD"),

@@ -1,8 +1,8 @@
-FROM golang:1.6.2
+FROM golang:1.8
 
-COPY . /go/src/github.com/garycarr/heads_or_tails
+WORKDIR /go/src/github/gcarr/heads_or_tails
+COPY . /go/src/github/gcarr/heads_or_tails
 
-RUN cd /go/src/github.com/garycarr/heads_or_tails &&\
-    go install
+RUN go-wrapper install
 
-ENTRYPOINT /go/bin/heads_or_tails
+CMD ["go-wrapper", "run"]

@@ -89,12 +89,7 @@ func (a app) updateTotalCount(inARowChan chan map[int]int) {
 		if a.conf.verbose {
 			a.printStatus(a.counterTotal.inARowCounter, billions, count)
 		}
-
-		// if app.conf.maxTosses > 0 && count > app.conf.conf.maxTosses {
-		if count > a.conf.maxTosses {
-			if a.conf.verbose {
-				a.printStatus(cT.inARowCounter, billions, count)
-			}
+		if a.conf.maxTosses != -1 && count > a.conf.maxTosses {
 			stop = true
 		}
 		a.counterTotal.mux.Unlock()

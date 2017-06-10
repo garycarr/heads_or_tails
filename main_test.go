@@ -1,6 +1,7 @@
 package main
 
 import (
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -72,7 +73,7 @@ func TestNewApp(t *testing.T) {
 }
 
 // Make sure that the defaults are applied
-func TestGetConfig(t *testing.T) {
+func TestGetConfigNoArgs(t *testing.T) {
 	conf := getConfig()
 	assert.Equal(t, conf.concurrentThreads, defaultConcurrentThreads)
 	assert.Equal(t, conf.maxTosses, defaultMaxTosses)
@@ -80,4 +81,35 @@ func TestGetConfig(t *testing.T) {
 	assert.Equal(t, conf.numSides, defaultNumSides)
 	assert.Equal(t, conf.printEvery, defaultPrintEvery)
 	assert.Equal(t, conf.verbose, defaultVerbose)
+}
+
+// Make sure that the defaults are applied
+func TestGetConfigEnvVars(t *testing.T) {
+	defer clearEnvs()
+
+	os.Setenv("ENV_SET", "TRUE")
+	os.Setenv("CONCURRENT_THREAD", "5")
+	os.Setenv("MAX_TOSSES", "100000")
+	os.Setenv("MIN_IN_ROW", "5")
+	os.Setenv("NUM_SIDES", "2")
+	os.Setenv("PRINT_EVERY", "100")
+	os.Setenv("VERBOSE", "false")
+
+	conf := getConfig()
+	assert.Equal(t, conf.concurrentThreads, 5)
+	assert.Equal(t, conf.maxTosses, 100000)
+	assert.Equal(t, conf.minInRow, 5)
+	assert.Equal(t, conf.numSides, 2)
+	assert.Equal(t, conf.printEvery, 100)
+	assert.Equal(t, conf.verbose, false)
+}
+
+func clearEnvs() {
+	os.Setenv("ENV_SET", "")
+	os.Setenv("CONCURRENT_THREAD", "")
+	os.Setenv("MAX_TOSSES", "")
+	os.Setenv("MIN_IN_ROW", "")
+	os.Setenv("NUM_SIDES", "")
+	os.Setenv("PRINT_EVERY", "")
+	os.Setenv("VERBOSE", "")
 }
