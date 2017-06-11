@@ -1,32 +1,65 @@
+// The following allows running `go generate` to bundle the static and template
+// assets into binary form so that the web console can be a stand-alone binary.
+// If you update anything in static/ or templates/ be sure to run `go generate`
+// and commit the binary differences as well.
+//go:generate go get github.com/jteeuwen/go-bindata/...
+//go:generate go-bindata -o resources/resources.go -pkg resources -prefix resources -ignore resources/resources.go resources/...
+//go:generate gofmt -w resources/resources.go
 package main
 
 import (
 	"fmt"
+	"log"
 	"math/rand"
+	"net/http"
 	"sort"
 	"sync"
 	"time"
 
 	"github.com/divan/num2words"
+	"github.com/garycarr/heads_or_tails/api"
 )
 
 type app struct {
-	conf         Config
+	server http.Server
+
+	apiHandler api.APISomething
+
+	conf Config
+
 	counterTotal *CounterTotal
 }
 
 func newApp(c Config) *app {
+	apiSomething := api.NewAPISomething()
 	return &app{
+		apiHandler:   apiSomething,
 		conf:         c,
 		counterTotal: &cT,
 	}
 }
 
-func (a app) start() {
-	a.setupCoinTossers()
+func (a *app) start() {
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		a.setupCoinTossers()
+	}()
+	a.endpoints()
+	go func() {
+		log.Fatal(http.ListenAndServe(":8080", nil))
+	}()
+	wg.Wait()
 }
 
-func (a app) setupCoinTossers() {
+func (a *app) endpoints() {
+	http.HandleFunc("/", a.apiHandler.IndexHandlerGET)
+	http.HandleFunc("/about", a.apiHandler.AboutHandlerGET)
+	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./resources/static"))))
+}
+
+func (a *app) setupCoinTossers() {
 	var wg sync.WaitGroup
 	inARowChan := make(chan map[int]int, a.conf.concurrentThreads)
 	go func() {
@@ -42,7 +75,7 @@ func (a app) setupCoinTossers() {
 	wg.Wait()
 }
 
-func (a app) toss(inARowChan chan map[int]int) {
+func (a *app) toss(inARowChan chan map[int]int) {
 	inARowCounter := make(map[int]int)
 	sameSideInARow := 0
 	tosses := 0
@@ -72,7 +105,7 @@ func (a app) toss(inARowChan chan map[int]int) {
 	}
 }
 
-func (a app) updateTotalCount(inARowChan chan map[int]int) {
+func (a *app) updateTotalCount(inARowChan chan map[int]int) {
 	for inARowCounter := range inARowChan {
 		a.counterTotal.mux.Lock()
 		a.counterTotal.count += a.conf.printEvery
@@ -96,7 +129,7 @@ func (a app) updateTotalCount(inARowChan chan map[int]int) {
 	}
 }
 
-func (a app) printStatus(inARowCounterCopy map[int]int, billions, count int) {
+func (a *app) printStatus(inARowCounterCopy map[int]int, billions, count int) {
 	var keys []int
 	for k := range inARowCounterCopy {
 		keys = append(keys, k)

@@ -1,6 +1,10 @@
 package main
 
 import (
+	"io/ioutil"
+	"log"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"testing"
 
@@ -40,36 +44,50 @@ func createTestFixture(c Config) testFixture {
 	fixture.app = newApp(c)
 	fixture.cleanup = func() {
 		stop = false
+		// Should be a better way to do this
+		http.DefaultServeMux = new(http.ServeMux)
 	}
 	return fixture
 }
 
-func doBenchmarkCoinTossers(b *testing.B, tF testFixture) {
-	for n := 0; n < b.N; n++ {
-		stop = false
-		cT.inARowCounter = make(map[int]int)
-		cT.count = 0
-		tF.app.start()
-	}
-}
-
-func BenchmarkSetupCoinTossersConc1MaxTosses10000000(b *testing.B) {
-	tF := createTestFixture(Config{concurrentThreads: 1, maxTosses: 10000000})
-	tF.cleanup()
-	doBenchmarkCoinTossers(b, tF)
-}
-func BenchmarkSetupCoinTossersConc5MaxTosses10000000(b *testing.B) {
-	tF := createTestFixture(Config{concurrentThreads: 5, maxTosses: 10000000})
-	tF.cleanup()
-	doBenchmarkCoinTossers(b, tF)
-}
-
-// Just test the app can compile and start
-func TestNewApp(t *testing.T) {
+func TestIndexHandler(t *testing.T) {
 	tF := createTestFixture(Config{})
-	tF.cleanup()
+	defer tF.cleanup()
 	tF.app.start()
-	assert.Equal(t, 1, 1, "The app ran and completed")
+	ts := httptest.NewServer(http.HandlerFunc(tF.app.apiHandler.IndexHandlerGET))
+	defer ts.Close()
+
+	res, err := http.Get(ts.URL)
+	if err != nil {
+		log.Fatal(err)
+	}
+	body, err := ioutil.ReadAll(res.Body)
+	res.Body.Close()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assert.Contains(t, string(body), "Heads or Tails")
+}
+
+func TestAboutHandler(t *testing.T) {
+	tF := createTestFixture(Config{})
+	defer tF.cleanup()
+	tF.app.start()
+	ts := httptest.NewServer(http.HandlerFunc(tF.app.apiHandler.AboutHandlerGET))
+	defer ts.Close()
+
+	res, err := http.Get(ts.URL)
+	if err != nil {
+		log.Fatal(err)
+	}
+	body, err := ioutil.ReadAll(res.Body)
+	res.Body.Close()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assert.Contains(t, string(body), "Heads or Tails about page")
 }
 
 // Make sure that the defaults are applied
