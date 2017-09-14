@@ -1,0 +1,38 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Build and Test') {
+            steps {
+                sh '''
+                    mkdir -p _build/src/github.com/garycarr
+                    rm -f _build/src/github.com/garycarr/heads_or_tails
+                    ln -s $PWD _build/src/github.com/garycarr/heads_or_tails
+                    export GOPATH=$PWD/_build
+                    export PATH=$GOPATH/bin:$PATH
+                    export PATH=$PATH:/home/gcarr/go/bin:/usr/local/go/bin:
+                    cd _build/src/github.com/garycarr/heads_or_tails
+                    go build
+                    go test
+                '''
+            }
+        }
+        stage('Create docker image'){
+            steps {
+                sh ```
+                    cd _build/src/github.com/garycarr/heads_or_tails
+                    DOCKER_TAG=${BUILD_NUMBER:=latest}
+                    docker build -t turnitin/seu-nos:${DOCKER_TAG} .
+                    # Make sure the container tests pass
+                    docker run -it turnitin/seu-nos:${DOCKER_TAG} go test
+                    # Push the image to gcloud and retag
+                ```
+            }
+        }
+        stage('Clean up') {
+            steps {
+                # sh 'docker rmi turnitin/seu-nos:${DOCKER_TAG}'
+            }
+        }
+    }
+}
