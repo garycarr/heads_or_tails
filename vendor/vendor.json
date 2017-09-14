@@ -12,33 +12,33 @@
 			"checksumSHA1": "OFu4xJEIjiI8Suu+j/gabfp+y6Q=",
 			"origin": "github.com/stretchr/testify/vendor/github.com/davecgh/go-spew/spew",
 			"path": "github.com/davecgh/go-spew/spew",
-			"revision": "4d4bfba8f1d1027c4fdbe371823030df51419987",
-			"revisionTime": "2017-01-30T11:31:45Z"
+			"revision": "f6abca593680b2315d2075e0f5e2a9751e3f431a",
+			"revisionTime": "2017-06-01T20:57:54Z"
 		},
 		{
-			"checksumSHA1": "93qG/VDlhMWbl0+Lw42zYkmrync=",
+			"checksumSHA1": "aygj9Z2mvsu5fWexje3HM51Gxjo=",
 			"path": "github.com/divan/num2words",
-			"revision": "c342fa97901369bdc545123062ea7aef26568ea7",
-			"revisionTime": "2015-11-08T22:07:04Z"
+			"revision": "57dba452f9421c72bc7fa8e44e4596419bde0355",
+			"revisionTime": "2017-09-04T21:22:00Z"
 		},
 		{
 			"checksumSHA1": "zKKp5SZ3d3ycKe4EKMNT0BqAWBw=",
 			"origin": "github.com/stretchr/testify/vendor/github.com/pmezard/go-difflib/difflib",
 			"path": "github.com/pmezard/go-difflib/difflib",
-			"revision": "4d4bfba8f1d1027c4fdbe371823030df51419987",
-			"revisionTime": "2017-01-30T11:31:45Z"
+			"revision": "f6abca593680b2315d2075e0f5e2a9751e3f431a",
+			"revisionTime": "2017-06-01T20:57:54Z"
 		},
 		{
-			"checksumSHA1": "JXUVA1jky8ZX8w09p2t5KLs97Nc=",
+			"checksumSHA1": "5NBHAe3S15q3L9hOLThnMZjIZRE=",
 			"path": "github.com/stretchr/testify/assert",
-			"revision": "4d4bfba8f1d1027c4fdbe371823030df51419987",
-			"revisionTime": "2017-01-30T11:31:45Z"
+			"revision": "f6abca593680b2315d2075e0f5e2a9751e3f431a",
+			"revisionTime": "2017-06-01T20:57:54Z"
 		},
 		{
-			"checksumSHA1": "XQ2GsdTmZgUO2xycRg02vxBYi50=",
+			"checksumSHA1": "FXzvTWp5GLM6Y4avBKCMbuaeH8Y=",
 			"path": "github.com/unrolled/render",
-			"revision": "50716a0a853771bb36bfce61a45cdefdb98c2e6e",
-			"revisionTime": "2017-01-09T14:32:44Z"
+			"revision": "1442182abc1e7397c8c0c862829bd00e9b670a96",
+			"revisionTime": "2017-06-05T15:59:36Z"
 		}
 	],
 	"rootPath": "github.com/garycarr/heads_or_tails"
