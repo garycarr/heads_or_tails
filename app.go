@@ -17,13 +17,12 @@ import (
 	"time"
 
 	"github.com/divan/num2words"
-	"github.com/garycarr/heads_or_tails/api"
 )
 
 type app struct {
 	server http.Server
 
-	apiHandler api.APISomething
+	apiHandler APISomething
 
 	conf Config
 
@@ -31,7 +30,7 @@ type app struct {
 }
 
 func newApp(c Config) *app {
-	apiSomething := api.NewAPISomething()
+	apiSomething := NewAPISomething()
 	return &app{
 		apiHandler:   apiSomething,
 		conf:         c,
